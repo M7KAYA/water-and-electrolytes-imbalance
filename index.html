@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Water And Electrolytes Imbalance</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #3498db 0%, #6dd5fa 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        transition: background 0.3s ease, color 0.3s ease;
+      }
+
+      #theme-toggle {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        padding: 8px 14px;
+        font-size: 14px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: #2980b9;
+        color: white;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+        z-index: 1000;
+      }
+
+      #theme-toggle:hover {
+        background-color: #1c5980;
+      }
+
+      .container {
+        width: 420px;
+        background: #ffffff;
+        padding: 30px 25px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      #question-text {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        color: #333;
+        padding: 14px 20px;
+        background-color: #e3f2fd;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+        user-select: none;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .btn-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 15px;
+      }
+
+      button {
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background-color: #3498db;
+        color: white;
+        transition: background-color 0.3s ease, transform 0.1s ease;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+        transform: scale(1.02);
+      }
+
+      button:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+      }
+
+      .correct,
+      .correct:hover {
+        background-color: #2ecc71 !important;
+      }
+
+      .wrong,
+      .wrong:hover {
+        background-color: #e74c3c !important;
+      }
+
+      .answer-btn:last-of-type {
+        margin-bottom: 10px;
+      }
+
+      #question-number {
+        margin-bottom: 15px;
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      #result-box {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #2c3e50;
+        padding: 12px;
+        background-color: #dfefff;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .hide {
+        display: none;
+      }
+
+      body.dark {
+        background: linear-gradient(135deg, #181818 0%, #0c0c0c 100%);
+        color: #ddd;
+      }
+
+      body.dark .container {
+        background: #1c1c1c;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+      }
+
+      body.dark #question-text {
+        background-color: #353535;
+        color: #f0f0f0;
+        box-shadow: 0 5px 1px rgba(70, 130, 180, 0.5);
+      }
+
+      body.dark #question-number {
+        color: #bbb;
+      }
+
+      body.dark #result-box {
+        background-color: #3a3a3a;
+        color: #eee;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      }
+
+      body.dark button {
+        background-color: #1b4f72;
+      }
+
+      body.dark button:hover {
+        background-color: #1c5980;
+      }
+
+      body.dark button:disabled {
+        background-color: #555;
+      }
+
+      body.dark .correct,
+      body.dark .correct:hover {
+        background-color: #27ae60;
+      }
+
+      body.dark .wrong,
+      body.dark .wrong:hover {
+        background-color: #c0392b;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="theme-toggle">Dark mode</button>
+
+    <div class="container">
+      <h2 id="quiz-title">Water And Electrolytes Imbalance</h2>
+
+      <div id="start-box">
+        <button id="start-btn">Start</button>
+      </div>
+
+      <div id="quiz-box" class="hide">
+        <div id="question-number"></div>
+        <div id="question-text"></div>
+        <div id="answer-buttons" class="btn-grid"></div>
+        <button id="next-btn" disabled>Next</button>
+      </div>
+
+      <div id="result-box" class="hide">
+        <h3>Your Score</h3>
+        <p id="score-text"></p>
+        <button id="try-again-btn">Try Again</button>
+      </div>
+    </div>
+
+    <script>
+      const allQuestions = [
+        // Book Questions
+        {
+          question:
+            "* Which of the following is the first-line treatment for severe hyperkalemia with ECG changes?",
+          options: [
+            "Insulin and glucose",
+            "Calcium gluconate",
+            "Sodium bicarbonate",
+            "Furosemide",
+          ],
+          correctIndex: 0,
+        },
+
+        {
+          question:
+            "* A patient with heart failure on furosemide (a loop diuretic) is at risk for which electrolyte imbalance?",
+          options: [
+            "Hypernatremia",
+            "Hypokalemia",
+            "Hypercalcemia",
+            "Hypermagnesemia",
+          ],
+          correctIndex: 1,
+        },
+
+        {
+          question:
+            "* A client with a recent thyroidectomy complains of numbness and tingling around the mouth. Which of the following findings indicates the serum calcium is low?",
+          options: [
+            "Bone pain",
+            "Depressed deep tendon reflexes",
+            "Positive Chvostek's sign",
+            "Nausea",
+          ],
+          correctIndex: 2,
+        },
+
+        {
+          question:
+            "* The nurse is admitting a client with a potassium level of 6.0 mEq/L. The nurse reports this finding as a result of:",
+          options: [
+            "Acute renal failure",
+            "Malabsorption syndrome",
+            "Nasogastric drainage",
+            "Laxative abuse",
+          ],
+          correctIndex: 0,
+        },
+
+        {
+          question:
+            "* Which of the following treatments is appropriate for severe hypocalcemia?",
+          options: [
+            "Oral calcium supplements",
+            "IV calcium gluconate",
+            "Loop diuretics",
+            "Sodium bicarbonate",
+          ],
+          correctIndex: 1,
+        },
+
+        {
+          question:
+            "* Nursing interventions for a patient with hyponatremia include:",
+          options: [
+            "Administering hypotonic IV fluids",
+            "Encouraging water intake",
+            "Restricting fluid intake",
+            "Restricting sodium intake",
+          ],
+          correctIndex: 2,
+        },
+
+        {
+          question:
+            "* Which of the following findings would the nurse expect to assess in a patient with hypokalemia?",
+          options: [
+            "Hypertension",
+            "pH below 7.35",
+            "Hypoglycemia",
+            "Hyporeflexia",
+          ],
+          correctIndex: 3,
+        },
+
+        {
+          question:
+            "* Which of the following is NOT an appropriate nursing intervention for a patient with hypercalcemia?",
+          options: [
+            "Administering calcitonin",
+            "Administering calcium gluconate",
+            "Administering loop diuretics",
+            "Encouraging ambulation",
+          ],
+          correctIndex: 1,
+        },
+
+        {
+          question:
+            "* The majority of the body's water is contained in which of the following fluid compartments?",
+          options: [
+            "Intracellular",
+            "Interstitial",
+            "Intravascular",
+            "Extracellular",
+          ],
+          correctIndex: 0,
+        },
+
+        {
+          question:
+            "* A client with hypoparathyroidism complains of numbness and tingling in his fingers and around the mouth. The nurse should assess for what electrolyte imbalance?",
+          options: [
+            "Hyponatremia",
+            "Hypocalcemia",
+            "Hyperkalemia",
+            "Hypermagnesemia",
+          ],
+          correctIndex: 1,
+        },
+
+        {
+          question:
+            "* A patient is scheduled to receive an isotonic solution. Which one of the following is an example of such a solution?",
+          options: [
+            "D10% W",
+            "0.45% saline",
+            "0.9% saline",
+            "3% normal saline",
+          ],
+          correctIndex: 2,
+        },
+
+        {
+          question:
+            "* A patient with severe vomiting and diarrhea is at risk for which electrolyte imbalance?",
+          options: [
+            "Hypernatremia",
+            "Hypokalemia",
+            "Hypercalcemia",
+            "Hypermagnesemia",
+          ],
+          correctIndex: 1,
+        },
+        // Questions
+        {
+          question:
+            "Which of the following is NOT a source of daily water input in a fluid-balanced body?",
+          options: [
+            "Metabolic water from catabolism",
+            "Water content of food",
+            "Sweat production",
+            "Water consumed as liquid",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Which electrolyte is the most abundant cation in the extracellular fluid (ECF)?",
+          options: ["Potassium", "Sodium", "Calcium", "Magnesium"],
+          correctIndex: 1,
+        },
+        {
+          question: "What is the normal serum sodium level range?",
+          options: [
+            "120–135 mEq/L",
+            "135–145 mEq/L",
+            "145–160 mEq/L",
+            "100–120 mEq/L",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following conditions is characterized by serum sodium levels 120 mEq/L?",
+          options: [
+            "Hypernatremia",
+            "Hyponatremia",
+            "Hyperkalemia",
+            "Hypokalemia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "What is a clinical manifestation of hypernatremia?",
+          options: [
+            "Muscle twitching",
+            "Poor skin turgor and thirst",
+            "Carpopedal spasm",
+            "Tall, peaked T waves on ECG",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which treatment is appropriate for a patient with severe hyperkalemia (K⁺ > 6 mEq/L)?",
+          options: [
+            "Administering 0.9% saline",
+            "Infusing calcium gluconate",
+            "Encouraging oral potassium intake",
+            "Restricting fluid intake",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "What is the primary cause of dilutional hyponatremia?",
+          options: [
+            "Excessive sodium intake",
+            "Increased body water",
+            "Renal excretion of potassium",
+            "Hyperparathyroidism",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Which of the following is a sign of hypocalcemia?",
+          options: [
+            "Hypertension",
+            "Positive Chvostek’s sign",
+            "Short QT interval",
+            "Hyporeflexia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "A patient with chronic kidney disease is at risk for which electrolyte imbalance?",
+          options: [
+            "Hypokalemia",
+            "Hyperkalemia",
+            "Hypocalcemia",
+            "Hypernatremia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is a symptom of water intoxication (overhydration)?",
+          options: [
+            "Dry mucous membranes",
+            "Delirium and headache",
+            "Hyporeflexia",
+            "Bradycardia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "What is the primary management for a patient with hypercalcemia?",
+          options: [
+            "Administering calcium gluconate",
+            "Infusing normal saline and furosemide",
+            "Restricting sodium intake",
+            "Encouraging oral phosphate",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which electrolyte imbalance is associated with Trousseau’s sign?",
+          options: [
+            "Hypokalemia",
+            "Hypocalcemia",
+            "Hyponatremia",
+            "Hypernatremia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "What is the most common cause of hypercalcemia?",
+          options: [
+            "Vitamin D deficiency",
+            "Malignancies",
+            "Addison’s disease",
+            "Diuretic use",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Which of the following is a feature of dehydration?",
+          options: [
+            "Increased urine output",
+            "Oliguria",
+            "Hypertension",
+            "Hyperreflexia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "What is the recommended treatment for intracellular dehydration with normal sodium levels?",
+          options: [
+            "Hypertonic saline",
+            "5% glucose IV",
+            "Oral water only",
+            "Loop diuretics",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "A patient with Addison’s disease is at risk for all of the following electrolyte imbalances EXCEPT:",
+          options: [
+            "Hyperkalemia",
+            "Hypokalemia",
+            "Hypercalcemia",
+            "Hyponatremia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following ECG changes is associated with hyperkalemia?",
+          options: [
+            "Prolonged QT interval",
+            "Peaked T waves",
+            "ST segment elevation",
+            "Short QT interval",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "What is the primary cause of metabolic water production in the body?",
+          options: [
+            "Ingestion of fluids",
+            "Catabolism of nutrients",
+            "Sweat evaporation",
+            "Renal excretion",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is a clinical manifestation of hypokalemia?",
+          options: ["Muscle weakness", "Tetany", "Seizures", "Hyperreflexia"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Which of the following is a clinical manifestation of hypocalcemia?",
+          options: ["Apathy", "Tall T wave", "Hyporeflexia", "Hyperreflexia"],
+          correctIndex: 3,
+        },
+        {
+          question:
+            "What is the primary goal of administering D5W to a patient with hypernatremia?",
+          options: [
+            "Restore sodium levels",
+            "Correct water deficit",
+            "Reduce potassium levels",
+            "Increase calcium levels",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Which of the following is a cause of hypernatremia?",
+          options: [
+            "Excessive water intake",
+            "Diabetes insipidus",
+            "Addison’s disease",
+            "Hypoparathyroidism",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "What is the most common cause of hypocalcemia?",
+          options: [
+            "Hyperparathyroidism",
+            "Vitamin D deficiency",
+            "Malignancies",
+            "Excess calcium intake",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "All of the following of management of water intoxication EXCEPT:",
+          options: [
+            "Administering hypertonic saline",
+            "Withholding fluids",
+            "Infusing calcium gluconate",
+            "Giving diuretics",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Which of the following is a sign of severe hyponatremia (Na⁺ < 110 mEq/L)?",
+          options: ["Hypertension", "Seizures", "Bradycardia", "Hyperreflexia"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which fluid compartment contains the majority of the body’s magnesium?",
+          options: [
+            "Extracellular fluid",
+            "Intracellular fluid",
+            "Plasma",
+            "Interstitial fluid",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "What is the primary cause of hypokalemia in patients taking loop diuretics?",
+          options: [
+            "Increased potassium intake",
+            "Urinary potassium loss",
+            "Redistribution into cells",
+            "Decreased GI absorption",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Which of the following is a symptom of hypercalcemia?",
+          options: [
+            "Hyporeflexia",
+            'Hypertension',
+            "Hepotension",
+            "Hypererflexia",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "What is the primary treatment for mild hyponatremia?",
+          options: [
+            "Hypertonic saline",
+            "Isotonic saline",
+            "Furosemide",
+            "Loop diuretics",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is a feature of extracellular fluid?",
+          options: [
+            "High potassium concentration",
+            "Low phosphate concentration",
+            "High magnesium concentration",
+            "Low sodium concentration",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "What is the primary cause of hyperkalemia in crush injuries?",
+          options: [
+            "Cellular potassium release",
+            "Reduced renal excretion",
+            "Excessive intake",
+            "Acidosis",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "What is the primary management for a patient with severe dehydration and electrolyte loss?",
+          options: [
+            "Oral water only",
+            "IV saline and glucose mixture",
+            "Hypertonic saline",
+            "Potassium supplements",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Water is the chief constituent of the human body.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Metabolic water is produced during anabolism.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Hyperkalemia is typically caused by excessive sodium intake.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "The intracellular fluid compartment contains the majority of the body’s potassium.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Dry tongue and pinched facies are signs of overhydration.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "Hypercalcemia can cause prolonged QT interval on ECG.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Diabetes insipidus is a cause of hyponatremia.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "Furosemide is used to treat hypercalcemia.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Chvostek’s sign is elicited by tapping the facial nerve.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Overhydration can lead to water intoxication.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Hypokalemia is characterized by tall, peaked T waves on ECG.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "The normal serum calcium level is 8.5–10.5 mg/dL.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Sodium is the primary cation in intracellular fluid.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "ADH secretion increases urine output.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "Hypernatremia is treated with hypotonic fluids.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Oliguria is a sign of dehydration.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+      ];
+
+      let currentQuestionIndex = 0;
+      let score = 0;
+
+      const startBtn = document.getElementById("start-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const tryAgainBtn = document.getElementById("try-again-btn");
+      const quizBox = document.getElementById("quiz-box");
+      const startBox = document.getElementById("start-box");
+      const questionNumberElement = document.getElementById("question-number");
+      const questionText = document.getElementById("question-text");
+      const answerButtons = document.getElementById("answer-buttons");
+      const resultBox = document.getElementById("result-box");
+      const scoreText = document.getElementById("score-text");
+      const themeToggleBtn = document.getElementById("theme-toggle");
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      function isTrueFalseQuestion(questionObj) {
+        const opts = questionObj.options;
+        return (
+          opts.length === 2 && opts.includes("True") && opts.includes("False")
+        );
+      }
+
+      function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        shuffleArray(allQuestions);
+        startBox.classList.add("hide");
+        resultBox.classList.add("hide");
+        quizBox.classList.remove("hide");
+        setNextQuestion();
+      }
+
+      function setNextQuestion() {
+        resetState();
+        if (currentQuestionIndex < allQuestions.length) {
+          showQuestion(allQuestions[currentQuestionIndex]);
+        } else {
+          showResult();
+        }
+      }
+
+      function showQuestion(questionObj) {
+        questionNumberElement.textContent = `Question ${
+          currentQuestionIndex + 1
+        } of ${allQuestions.length}`;
+        questionText.textContent = questionObj.question;
+
+        const optionsWithFlag = questionObj.options.map((opt, i) => ({
+          text: opt,
+          isCorrect: i === questionObj.correctIndex,
+        }));
+
+        if (!isTrueFalseQuestion(questionObj)) {
+          const fixedOptions = [
+            "All of the above",
+            "All are true",
+            "All are false",
+            "All are correct",
+            "All of the answers are correct",
+            "All of the answers are recommended",
+            "None of the above",
+          ];
+          const fixedOptionIndex = optionsWithFlag.findIndex((option) =>
+            fixedOptions.includes(option.text.trim())
+          );
+
+          if (fixedOptionIndex !== -1) {
+            const fixedOption = optionsWithFlag.splice(fixedOptionIndex, 1)[0];
+            shuffleArray(optionsWithFlag);
+            optionsWithFlag.push(fixedOption);
+          } else {
+            shuffleArray(optionsWithFlag);
+          }
+        }
+
+        optionsWithFlag.forEach((option) => {
+          const button = document.createElement("button");
+          button.textContent = option.text;
+          button.classList.add("answer-btn");
+          button.addEventListener("click", () =>
+            selectAnswer(button, option.isCorrect)
+          );
+          answerButtons.appendChild(button);
+        });
+      }
+
+      function resetState() {
+        nextBtn.disabled = true;
+        answerButtons.innerHTML = "";
+      }
+
+      function selectAnswer(button, isCorrect) {
+        const buttons = answerButtons.querySelectorAll("button");
+        buttons.forEach((btn) => (btn.disabled = true));
+
+        if (isCorrect) {
+          button.classList.add("correct");
+          score++;
+        } else {
+          button.classList.add("wrong");
+          buttons.forEach((btn) => {
+            if (
+              btn.textContent ===
+              allQuestions[currentQuestionIndex].options[
+                allQuestions[currentQuestionIndex].correctIndex
+              ]
+            ) {
+              btn.classList.add("correct");
+            }
+          });
+        }
+
+        nextBtn.disabled = false;
+      }
+
+      function showResult() {
+        quizBox.classList.add("hide");
+        resultBox.classList.remove("hide");
+        scoreText.textContent = `${score} out of ${allQuestions.length}`;
+      }
+
+      // Theme toggle
+      themeToggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        themeToggleBtn.textContent = document.body.classList.contains("dark")
+          ? "Light mode"
+          : "Dark mode";
+      });
+
+      // Event listeners
+      startBtn.addEventListener("click", startQuiz);
+      nextBtn.addEventListener("click", () => {
+        currentQuestionIndex++;
+        setNextQuestion();
+      });
+      tryAgainBtn.addEventListener("click", startQuiz);
+    </script>
+  </body>
+</html>
